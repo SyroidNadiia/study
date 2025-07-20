@@ -145,3 +145,61 @@ where id in (
     having count(*) >= 5
 )
 
+
+--1934. Confirmation Rate
+
+SELECT
+  s.user_id,
+  ROUND(
+    IF(
+      COUNT(c.action) = 0, 
+      0,
+      SUM(CASE WHEN c.action = 'confirmed' THEN 1 ELSE 0 END) / COUNT(c.action)
+    ),
+    2
+  ) AS confirmation_rate
+FROM Signups s
+LEFT JOIN Confirmations c
+  ON s.user_id = c.user_id
+GROUP BY s.user_id
+ORDER BY confirmation_rate;
+
+
+
+--Not Boring Movies
+select *
+from Cinema
+where id%2 != 0
+    AND description NOT LIKE 'boring'
+order by rating DESC;
+
+
+
+-- Average Selling Price
+
+with g as (
+    select p.product_id, p.price, u.units
+    from Prices as p
+    left join UnitsSold as u
+    on p.product_id = u.product_id
+      and u.purchase_date between p.start_date and p.end_date
+)
+select product_id,
+    ROUND(
+        IFNULL(SUM(price * units) / SUM(units), 0),
+        2)
+         as average_price
+from g
+group by product_id; 
+
+
+--Project Employees I
+select 
+    p.project_id
+    , ROUND(AVG(e.experience_years), 2) as average_years
+from Project as p
+left join Employee as e
+on p.employee_id = e.employee_id
+group by p.project_id;
+
+
