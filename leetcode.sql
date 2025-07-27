@@ -203,3 +203,52 @@ on p.employee_id = e.employee_id
 group by p.project_id;
 
 
+--1633. Percentage of Users Attended a Contest
+select r.contest_id, ROUND((COUNT(r.user_id) / 3 * 100), 2) as percentage
+from Users as u
+left join Register as r
+on u.user_id = r.user_id
+group by r.contest_id
+order by percentage DESC, r.contest_id ASC;
+
+
+--1211. Queries Quality and Percentage
+select query_name
+    , ROUND((SUM(rating / position) / COUNT(query_name)), 2) as quality
+    , ROUND((SUM(CASE
+    WHEN rating < 3 THEN 1 ELSE 0
+    END) / COUNT(query_name) * 100.0), 2)
+    as poor_query_percentage
+from Queries
+group by query_name;
+
+
+--1193. Monthly Transactions I
+select 
+    DATE_FORMAT(trans_date, '%Y-%m') as month
+    , country
+    , COUNT(*) as trans_count
+    , SUM(state = 'approved') as approved_count
+    , SUM(amount) as trans_total_amount
+    , SUM(
+        CASE WHEN state = 'approved' THEN amount ELSE 0 END
+    ) as approved_total_amount
+from Transactions
+group by month, country;
+
+
+
+--1174. Immediate Food Delivery II
+with first_orders as (
+    select *
+    from Delivery as d
+    where order_date = (
+        select MIN(order_date)
+        from Delivery
+        where customer_id = d.customer_id
+    )
+)
+select ROUND(SUM(order_date = customer_pref_delivery_date) / COUNT(*) * 100.0, 2) as immediate_percentage
+from first_orders;
+
+
