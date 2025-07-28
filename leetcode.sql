@@ -252,3 +252,88 @@ select ROUND(SUM(order_date = customer_pref_delivery_date) / COUNT(*) * 100.0, 2
 from first_orders;
 
 
+
+--Game Play Analysis IV
+with first_login as (
+   select player_id, MIN(event_date) as first_day
+   from Activity
+   group by player_id
+),
+next_day_login as (
+    select distinct a.player_id
+    from Activity as a
+    join first_login as f
+    on f.player_id = a.player_id
+        and a.event_date = DATE_ADD(f.first_day, INTERVAL 1 DAY)
+)
+SELECT 
+  ROUND(COUNT(n.player_id) * 1.0 / (SELECT COUNT(*) FROM first_login), 2) AS fraction
+FROM next_day_login n;
+
+
+
+--2356. Number of Unique Subjects Taught by Each Teacher
+select teacher_id, COUNT(DISTINCT subject_id) as cnt
+from Teacher
+group by teacher_id;
+
+
+--1141. User Activity for the Past 30 Days I
+select 
+    activity_date as day
+    , COUNT(DISTINCT user_id) as active_users
+from Activity
+where activity_date BETWEEN DATE_SUB('2019-07-27', INTERVAL 29 DAY) AND '2019-07-27'
+group by day;
+
+
+--1070. Product Sales Analysis III
+select 
+    product_id
+    , MIN(year) as first_year
+    , quantity
+    , price
+from Sales
+group by product_id;
+
+
+--596. Classes With at Least 5 Students
+with cte as (
+   select 
+    class
+    , COUNT(DISTINCT student) as count_student
+from Courses
+group by class 
+)
+select class
+from cte
+where count_student > 5;
+
+
+--1729. Find followers count
+select 
+    user_id
+    , COUNT(DISTINCT follower_id) as followers_count
+from Followers
+group by user_id;
+
+
+--619. Biggest Single Number
+select MAX(new_num) as num
+from (select num as new_num
+    from MyNumbers
+    group by num
+    having COUNT(num) = 1
+) as singles;
+
+
+--1045. Customers Who Bought All Products
+select 
+    customer_id
+from Customer
+group by customer_id
+having COUNT(product_key) = (
+    select COUNT(DISTINCT product_key) as all_products
+    from Product);
+
+
