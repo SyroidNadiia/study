@@ -337,3 +337,49 @@ having COUNT(product_key) = (
     from Product);
 
 
+--1731. The Number of Employees Which Report to Each Employee
+select 
+    a.employee_id
+    , a.name
+    , count(b.employee_id) as reports_count
+    , round(avg(b.age), 0) as average_age
+from Employees as a
+inner join Employees as b
+on a.employee_id = b.reports_to
+group by a.employee_id
+having reports_count > 0;
+
+
+--1789. Primary Department for Each Employee
+select 
+    employee_id
+    , department_id
+from Employee
+where primary_flag = 'Y' 
+    or employee_id in (
+        select employee_id
+        from Employee
+        group by employee_id
+        having count(*) = 1
+    );
+
+
+--610. Triangle Judgement
+select *
+    , case when (x + y) > z and (x + z) > y and (y + z) > x then 'Yes' else 'No'
+    end as triangle
+from Triangle;
+
+
+--180.Consecutive numbers
+with find_num as (
+    select num
+    , lag(num, 1) OVER(order by id) as prev_num
+    , lead(num, 1) OVER(order by id) as next_num
+from Logs
+)
+select num as ConsecutiveNums
+from find_num
+where num = prev_num and num = next_num;
+
+
