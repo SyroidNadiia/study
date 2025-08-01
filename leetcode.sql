@@ -383,3 +383,88 @@ from find_num
 where num = prev_num and num = next_num;
 
 
+--1164. Product Price at a Given Date
+select p1.product_id
+    , MAX(new_price) as price
+from Products as p1
+where change_date <= '2019-08-16'
+group by p1.product_id
+UNION
+select p2.product_id
+    , 10 as price
+from Products as p2
+where p2.product_id NOT IN (
+    select product_id
+from Products
+where change_date <= '2019-08-16'
+group by product_id
+);
+
+
+--1204. Last Person to Fit in the Bus
+WITH cte AS (
+    SELECT person_name,
+           SUM(weight) OVER (ORDER BY turn) AS total_weight
+    FROM Queue
+)
+SELECT person_name
+FROM cte
+WHERE total_weight <= 1000
+ORDER BY total_weight DESC
+LIMIT 1;
+
+
+--1907. Count Salary Categories
+select 
+    case 
+    when income < 20000 then 'Low Salary'
+    when income >= 20000 and income <= 50000 then 'Average Salary'
+    when income > 50000 then 'High Salary' else 0 end as category
+    , count(account_id) as accounts_count
+from Accounts
+group by category;
+
+--or 
+--in the previous version, categories are not displayed if there are no accounts there
+SELECT 'Low Salary' AS category, 
+       COALESCE(SUM(income < 20000), 0) AS accounts_count
+FROM Accounts
+UNION ALL
+SELECT 'Average Salary', 
+       COALESCE(SUM(income BETWEEN 20000 AND 50000), 0)
+FROM Accounts
+UNION ALL
+SELECT 'High Salary', 
+       COALESCE(SUM(income > 50000), 0)
+FROM Accounts;
+
+
+--1978. Employees Whose Manager Left the Company
+select employee_id
+from Employees
+where salary < 30000 and manager_id NOT IN (
+    select employee_id
+    from Employees
+)
+group by employee_id;
+
+
+-- 1321. Restaurant Growth
+WITH cte AS (
+  SELECT 
+      visited_on,
+      SUM(amount) OVER (
+          ORDER BY visited_on
+          ROWS BETWEEN 6 PRECEDING AND CURRENT ROW
+      ) AS amount,
+      ROUND(AVG(amount) OVER (
+          ORDER BY visited_on
+          ROWS BETWEEN 6 PRECEDING AND CURRENT ROW
+      ), 2) AS average_amount,
+      ROW_NUMBER() OVER (ORDER BY visited_on) AS rn
+  FROM Customer
+  GROUP BY visited_on
+)
+SELECT visited_on, amount, average_amount
+FROM cte
+WHERE rn >= 7;
